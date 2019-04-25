@@ -1,5 +1,6 @@
 try {
-    const {desktopCapturer} = require('electron')
+    const {desktopCapturer} = nodeRequire('electron')
+    window.desktopCapturer = desktopCapturer;
 } catch (e) {
     console.error(e);
 }
@@ -656,11 +657,84 @@ function unload() {
 let isVideo = true;
 
 
+//自定义屏幕的抓取
+window.JitsiMeetScreenObtainer = {
+    openDesktopPicker(desktopSharingSources, handleStream, handleError) {
+        //获取所有的窗口 ， , 'screen'（屏幕）
+        desktopCapturer.getSources({types: ['window']}, (error, sources) => {
+            for (let i = 0; i < sources.length; ++i) {
+                if (sources[i].name === desktopSharingSources.desktopSharingSources) {
+
+
+                    handleStream(sources[i].id, 'window');
+
+                    return;
+
+
+                    // navigator.mediaDevices.getUserMedia({
+                    //     audio: {
+                    //         mandatory: {
+                    //             chromeMediaSource: 'desktop',
+                    //             echoCancellation: true
+                    //         },
+                    //         optional: [{
+                    //             disableLocalEcho: true
+                    //         }]
+                    //     },
+                    //     video: {
+                    //         mandatory: {
+                    //             chromeMediaSource: 'desktop',
+                    //             chromeMediaSourceId: sources[i].id,
+                    //             minWidth: 1280,
+                    //             maxWidth: 1280,
+                    //             minHeight: 720,
+                    //             maxHeight: 720
+                    //         }
+                    //     }
+                    //
+                    // }).then((stream) => {
+                    //     let applyConstraintsPromise;
+                    //     if (stream
+                    //         && stream.getTracks()
+                    //         && stream.getTracks().length > 0) {
+                    //         applyConstraintsPromise = stream.getTracks()[0].applyConstraints(options.trackOptions);
+                    //     } else {
+                    //         applyConstraintsPromise = Promise.resolve();
+                    //     }
+                    //     applyConstraintsPromise.then(() => {
+                    //             console.log('pre ->', stream);
+                    //             console.log(handleStream);
+                    //
+                    //             handleStream(stream, stream.id, 'window');
+                    //
+                    //             // handleStream({
+                    //             //     stream,
+                    //             //     sourceId: stream.id,
+                    //             //     sourceType: 'window'
+                    //             // })
+                    //         }
+                    //     );
+                    //
+                    //     // handleStream(stream)
+                    // }).catch((e) => handleError(e))
+
+                    // return
+                }
+            }
+        });
+
+
+    }
+
+
+};
+
+
 /**
  *
  */
 function switchVideo() { // eslint-disable-line no-unused-vars
-    // isVideo = !isVideo;
+    isVideo = !isVideo;
     if (localTracks[1]) {
         localTracks[1].dispose();
         localTracks.pop();
@@ -668,65 +742,32 @@ function switchVideo() { // eslint-disable-line no-unused-vars
 
 
     JitsiMeetJS.createLocalTracks({
-        devices: ['desktop'],
-        desktopSharingSources: {'window': _title}
-
+        devices: ['desktop','audio'],
+        desktopSharingSources: _title
     }).then((tracks) => {
-        console.log(tracks);
+        room.addTrack(tracks[0]);
+        // localTracks.push(tracks[0]);
+        // localTracks[1].addEventListener(
+        //     JitsiMeetJS.events.track.TRACK_MUTE_CHANGED,
+        //     () => console.log('local track muted'));
+        // localTracks[1].addEventListener(
+        //     JitsiMeetJS.events.track.LOCAL_TRACK_STOPPED,
+        //     () => console.log('local track stoped'));
+        // localTracks[1].attach($('#localVideo1')[0]);
+
+
+
+        // localTracks.push(tracks[0]);
+        // localTracks[1].addEventListener(
+        //     JitsiMeetJS.events.track.TRACK_MUTE_CHANGED,
+        //     () => console.log('local track muted'));
+        // localTracks[1].addEventListener(
+        //     JitsiMeetJS.events.track.LOCAL_TRACK_STOPPED,
+        //     () => console.log('local track stoped'));
+        // localTracks[1].attach($('#localVideo1')[0]);
+        // room.addTrack(localTracks[1]);
+
     }).catch(error => console.log(error))
-
-
-    desktopCapturer.getSources({types: ['window', 'screen']}, (error, sources) => {
-        if (error) throw error
-        for (let i = 0; i < sources.length; ++i) {
-            if (sources[i].name === window._title) {
-                navigator.mediaDevices.getUserMedia({
-                    audio: {
-                        mandatory: {
-                            chromeMediaSource: 'desktop',
-                            echoCancellation: true
-                        },
-                        optional: [{
-                            disableLocalEcho: true
-                        }]
-                    },
-                    video: {
-                        mandatory: {
-                            chromeMediaSource: 'desktop',
-                            chromeMediaSourceId: sources[i].id,
-                            minWidth: 1280,
-                            maxWidth: 1280,
-                            minHeight: 720,
-                            maxHeight: 720
-                        }
-                    }
-                }).then((stream) => handleStream(stream))
-                    .catch((e) => handleError(e))
-                return
-            }
-        }
-    })
-
-    function handleStream(stream) {
-        console.log(stream);
-
-        stream.getTracks().map(trackMedia => {
-                console.log(trackMedia)
-            }
-        );
-
-
-        // const video = document.querySelector('#localVideo1')
-        // video.srcObject = stream
-        // video.onloadedmetadata = (e) => video.play()
-
-        // room.join(stream);
-    }
-
-    function handleError(e) {
-        console.log("handleError");
-        console.log(e)
-    }
 
 
 }
