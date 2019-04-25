@@ -4,14 +4,59 @@
     <meta charset="UTF-8">
     <title></title>
 
+
+
+
+
     <!-- Insert this line above script imports  -->
-    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    <script>if (typeof module === 'object') {
+        window.module = module;
+        module = undefined;
+    }</script>
 
     <!-- normal script imports etc  -->
     <script src="libs/jquery-2.1.1.min.js"></script>
     <script src="libs/strophe/strophe.js"></script>
     <script src="libs/strophe/strophe.disco.min.js?v=1"></script>
     <script src="libs/lib-jitsi-meet.min.js"></script>
+
+
+    <script>
+        //自定义窗口
+        window.JitsiMeetScreenObtainer = {
+            openDesktopPicker(desktopSharingSources, handleStream, handleError) {
+                // for (let i = 0; i < sources.length; ++i) {
+                //     if (sources[i].name === desktopSharingSources) {
+                //         navigator.mediaDevices.getUserMedia({
+                //             audio: {
+                //                 mandatory: {
+                //                     chromeMediaSource: 'desktop',
+                //                     echoCancellation: true
+                //                 },
+                //                 optional: [{
+                //                     disableLocalEcho: true
+                //                 }]
+                //             },
+                //             video: {
+                //                 mandatory: {
+                //                     chromeMediaSource: 'desktop',
+                //                     chromeMediaSourceId: sources[i].id,
+                //                     minWidth: 1280,
+                //                     maxWidth: 1280,
+                //                     minHeight: 720,
+                //                     maxHeight: 720
+                //                 }
+                //             }
+                //         }).then((stream) => handleStream(stream))
+                //             .catch((e) => handleError(e))
+                //         return
+                //     }
+                // }
+            }
+        };
+
+
+    </script>
 
     <!-- Insert this line after script imports -->
     <script>if (window.module) module = window.module;</script>
@@ -21,13 +66,13 @@
 
 </head>
 <body>
-    <a href="#" onclick="unload()">Unload</a>
-    <a href="#" onclick="switchVideo()">switchVideo</a>
-    <div id="audioOutputSelectWrapper" style="display: none;">
-        Change audio output device
-        <select id="audioOutputSelect" onchange="changeAudioOutput(this)"></select>
-    </div>
-    <!-- <video id="localVideo" autoplay="true"></video> -->
-    <!--<audio id="localAudio" autoplay="true" muted="true"></audio>-->
+<a href="#" onclick="unload()">Unload</a>
+<a href="#" onclick="switchVideo()">switchVideo</a>
+<div id="audioOutputSelectWrapper" style="display: none;">
+    Change audio output device
+    <select id="audioOutputSelect" onchange="changeAudioOutput(this)"></select>
+</div>
+<!-- <video id="localVideo" autoplay="true"></video> -->
+<!--<audio id="localAudio" autoplay="true" muted="true"></audio>-->
 </body>
 </html>

@@ -1,5 +1,9 @@
-let {desktopCapturer} = require('electron');
-console.log(desktopCapturer);
+try {
+    const {desktopCapturer} = require('electron')
+} catch (e) {
+    console.error(e);
+}
+
 
 /* global $, JitsiMeetJS */
 JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.INFO);
@@ -497,6 +501,7 @@ function onLocalTracks(tracks) {
             localTracks[i].attach($(`#localVideo${i}`)[0]);
         } else {
             $('body').append(
+                // muted='true' 则本地静音
                 `<audio autoplay='1' muted='true' id='localAudio${i}' />`);
             localTracks[i].attach($(`#localAudio${i}`)[0]);
         }
@@ -650,17 +655,79 @@ function unload() {
 
 let isVideo = true;
 
+
 /**
  *
  */
 function switchVideo() { // eslint-disable-line no-unused-vars
-    isVideo = !isVideo;
+    // isVideo = !isVideo;
     if (localTracks[1]) {
         localTracks[1].dispose();
         localTracks.pop();
     }
 
-    console.log('im here');
+
+    JitsiMeetJS.createLocalTracks({
+        devices: ['desktop'],
+        desktopSharingSources: {'window': _title}
+
+    }).then((tracks) => {
+        console.log(tracks);
+    }).catch(error => console.log(error))
+
+
+    desktopCapturer.getSources({types: ['window', 'screen']}, (error, sources) => {
+        if (error) throw error
+        for (let i = 0; i < sources.length; ++i) {
+            if (sources[i].name === window._title) {
+                navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        mandatory: {
+                            chromeMediaSource: 'desktop',
+                            echoCancellation: true
+                        },
+                        optional: [{
+                            disableLocalEcho: true
+                        }]
+                    },
+                    video: {
+                        mandatory: {
+                            chromeMediaSource: 'desktop',
+                            chromeMediaSourceId: sources[i].id,
+                            minWidth: 1280,
+                            maxWidth: 1280,
+                            minHeight: 720,
+                            maxHeight: 720
+                        }
+                    }
+                }).then((stream) => handleStream(stream))
+                    .catch((e) => handleError(e))
+                return
+            }
+        }
+    })
+
+    function handleStream(stream) {
+        console.log(stream);
+
+        stream.getTracks().map(trackMedia => {
+                console.log(trackMedia)
+            }
+        );
+
+
+        // const video = document.querySelector('#localVideo1')
+        // video.srcObject = stream
+        // video.onloadedmetadata = (e) => video.play()
+
+        // room.join(stream);
+    }
+
+    function handleError(e) {
+        console.log("handleError");
+        console.log(e)
+    }
+
 
 }
 

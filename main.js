@@ -1,6 +1,12 @@
 const {app, BrowserWindow, Menu, desktopCapturer} = require('electron')
 
 
+
+
+
+//自己窗口独立的名称
+const meTitle = "webrtc_test_" + new Date().getTime()
+
 // 保持对window对象的全局引用，如果不这么做的话，当JavaScript对象被
 // 垃圾回收的时候，window对象将会自动的关闭
 let win
@@ -15,10 +21,11 @@ function createWindow() {
     win = new BrowserWindow({
         width: 1280, height: 720, webPreferences: {
             // allow code inside this window to use use native window.open()
-            nodeIntegration:true
+            nodeIntegration: true
             // nativeWindowOpen: true,
             // nodeIntegrationInWorker: true,
         },
+        title: meTitle
     })
 
     // 然后加载应用的 index.html。
@@ -26,6 +33,9 @@ function createWindow() {
 
     // 打开开发者工具
     win.webContents.openDevTools()
+
+
+    win.webContents.executeJavaScript("window._title='" + meTitle+"'")
 
     // 当 window 被关闭，这个事件会被触发。
     win.on('closed', () => {
