@@ -540,16 +540,29 @@ function onRemoteTrack(track) {
         deviceId =>
             console.log(
                 `track audio output device was changed to ${deviceId}`));
-    const id = participant + track.getType() + idx;
+
+
+    // const id = participant + track.getType() + idx;
+
+    const _id = "el_" + track.getId();
+
 
     if (track.getType() === 'video') {
         $('body').append(
-            `<video autoplay='1' id='${participant}video${idx}' />`);
+            "<video autoplay='1' id='" + _id + "'  height='720' width='1280' />");
     } else {
         $('body').append(
-            `<audio autoplay='1' id='${participant}audio${idx}' />`);
+            "<audio autoplay='1' id='" + _id + "' />");
     }
-    track.attach($(`#${id}`)[0]);
+
+
+    // let el = $(`#${id}`)[0];
+    let el = $('#' + _id)[0];
+    track.attach(el);
+
+    console.log('new track', track);
+
+
 }
 
 /**
@@ -585,10 +598,16 @@ function onUserLeft(id) {
 function onConnectionSuccess() {
 
 
+    //第一个参数为房间名
     room = connection.initJitsiConference('xiaofeng', confOptions);
     room.on(JitsiMeetJS.events.conference.TRACK_ADDED, onRemoteTrack);
-    room.on(JitsiMeetJS.events.conference.TRACK_REMOVED, track => {
+    room.on(JitsiMeetJS.events.conference.TRACK_REMOVED, (track) => {
         console.log(`track removed!!!${track}`);
+
+        //远程流被停止则删除对应的流的UI
+        $('#el_' + track.getId()).remove();
+
+
     });
     room.on(
         JitsiMeetJS.events.conference.CONFERENCE_JOINED,
@@ -610,7 +629,14 @@ function onConnectionSuccess() {
     room.on(
         JitsiMeetJS.events.conference.PHONE_NUMBER_CHANGED,
         () => console.log(`${room.getPhoneNumber()} - ${room.getPhonePin()}`));
+
+
+    //设置接收到最高的分辨率,但流会被重新接收，所以需要流停止的情况
+    room.setReceiverVideoConstraint(720);
+
     room.join();
+
+
 }
 
 /**
@@ -659,66 +685,43 @@ let isVideo = true;
 
 //自定义屏幕的抓取
 window.JitsiMeetScreenObtainer = {
+
+
+    /**
+     * 获取用户媒体的钩子
+     * @param constraints
+     * @param um
+     * @param options
+     */
+    getUserMedia(constraints, um, options) {
+        console.log('<-- hook ->', constraints, um, options);
+
+        //修改获取系统声音
+        if (um.indexOf('desktop') > -1) {
+            constraints['audio'] = {
+                mandatory: {
+                    chromeMediaSource: 'desktop',
+                    echoCancellation: true
+                },
+                optional: [{
+                    disableLocalEcho: true
+                }]
+            }
+        }
+
+    },
+
+
     openDesktopPicker(desktopSharingSources, handleStream, handleError) {
         //获取所有的窗口 ， , 'screen'（屏幕）
         desktopCapturer.getSources({types: ['window']}, (error, sources) => {
             for (let i = 0; i < sources.length; ++i) {
                 if (sources[i].name === desktopSharingSources.desktopSharingSources) {
-
-
                     handleStream(sources[i].id, 'window');
-
                     return;
 
 
-                    // navigator.mediaDevices.getUserMedia({
-                    //     audio: {
-                    //         mandatory: {
-                    //             chromeMediaSource: 'desktop',
-                    //             echoCancellation: true
-                    //         },
-                    //         optional: [{
-                    //             disableLocalEcho: true
-                    //         }]
-                    //     },
-                    //     video: {
-                    //         mandatory: {
-                    //             chromeMediaSource: 'desktop',
-                    //             chromeMediaSourceId: sources[i].id,
-                    //             minWidth: 1280,
-                    //             maxWidth: 1280,
-                    //             minHeight: 720,
-                    //             maxHeight: 720
-                    //         }
-                    //     }
-                    //
-                    // }).then((stream) => {
-                    //     let applyConstraintsPromise;
-                    //     if (stream
-                    //         && stream.getTracks()
-                    //         && stream.getTracks().length > 0) {
-                    //         applyConstraintsPromise = stream.getTracks()[0].applyConstraints(options.trackOptions);
-                    //     } else {
-                    //         applyConstraintsPromise = Promise.resolve();
-                    //     }
-                    //     applyConstraintsPromise.then(() => {
-                    //             console.log('pre ->', stream);
-                    //             console.log(handleStream);
-                    //
-                    //             handleStream(stream, stream.id, 'window');
-                    //
-                    //             // handleStream({
-                    //             //     stream,
-                    //             //     sourceId: stream.id,
-                    //             //     sourceType: 'window'
-                    //             // })
-                    //         }
-                    //     );
-                    //
-                    //     // handleStream(stream)
-                    // }).catch((e) => handleError(e))
-
-                    // return
+                  
                 }
             }
         });
@@ -741,36 +744,53 @@ function switchVideo() { // eslint-disable-line no-unused-vars
     }
 
 
+    // JitsiMeetJS.createLocalTracks({
+    //     devices: ['desktop'],
+    //     desktopSharingSources: _title
+    // }).then((tracks) => {
+    //     room.addTrack(tracks[0]);
+    //     // localTracks.push(tracks[0]);
+    //     // localTracks[1].addEventListener(
+    //     //     JitsiMeetJS.events.track.TRACK_MUTE_CHANGED,
+    //     //     () => console.log('local track muted'));
+    //     // localTracks[1].addEventListener(
+    //     //     JitsiMeetJS.events.track.LOCAL_TRACK_STOPPED,
+    //     //     () => console.log('local track stoped'));
+    //     // localTracks[1].attach($('#localVideo1')[0]);
+    //
+    //
+    //     // localTracks.push(tracks[0]);
+    //     // localTracks[1].addEventListener(
+    //     //     JitsiMeetJS.events.track.TRACK_MUTE_CHANGED,
+    //     //     () => console.log('local track muted'));
+    //     // localTracks[1].addEventListener(
+    //     //     JitsiMeetJS.events.track.LOCAL_TRACK_STOPPED,
+    //     //     () => console.log('local track stoped'));
+    //     // localTracks[1].attach($('#localVideo1')[0]);
+    //     // room.addTrack(localTracks[1]);
+    //
+    // }).catch(error => console.log(error))
+
+
+}
+
+
+function shareScreen() { // eslint-disable-line no-unused-vars
+    isVideo = !isVideo;
+    if (localTracks[1]) {
+        localTracks[1].dispose();
+        localTracks.pop();
+    }
     JitsiMeetJS.createLocalTracks({
-        devices: ['desktop','audio'],
+        devices: ['desktop'],
         desktopSharingSources: _title
     }).then((tracks) => {
         room.addTrack(tracks[0]);
-        // localTracks.push(tracks[0]);
-        // localTracks[1].addEventListener(
-        //     JitsiMeetJS.events.track.TRACK_MUTE_CHANGED,
-        //     () => console.log('local track muted'));
-        // localTracks[1].addEventListener(
-        //     JitsiMeetJS.events.track.LOCAL_TRACK_STOPPED,
-        //     () => console.log('local track stoped'));
-        // localTracks[1].attach($('#localVideo1')[0]);
-
-
-
-        // localTracks.push(tracks[0]);
-        // localTracks[1].addEventListener(
-        //     JitsiMeetJS.events.track.TRACK_MUTE_CHANGED,
-        //     () => console.log('local track muted'));
-        // localTracks[1].addEventListener(
-        //     JitsiMeetJS.events.track.LOCAL_TRACK_STOPPED,
-        //     () => console.log('local track stoped'));
-        // localTracks[1].attach($('#localVideo1')[0]);
-        // room.addTrack(localTracks[1]);
-
     }).catch(error => console.log(error))
 
 
 }
+
 
 /**
  *
@@ -831,11 +851,26 @@ JitsiMeetJS.mediaDevices.addEventListener(
 
 connection.connect();
 
-JitsiMeetJS.createLocalTracks({devices: ['audio', 'video']})
-    .then(onLocalTracks)
-    .catch(error => {
-        throw error;
-    });
+// JitsiMeetJS.createLocalTracks({devices: ['desktop']})
+//     .then(shareScreen)
+//     .catch(error => {
+//         throw error;
+//     });
+
+//启动则进行屏幕共享
+setTimeout(function () {
+//屏幕共享
+    JitsiMeetJS.createLocalTracks({
+        //需要系统声音，必须添加audio，同时需要hook navigator.mediaDevices.getUserMedia
+        devices: ['desktop','audio'],
+        desktopSharingSources: _title
+    }).then((tracks) => {
+        tracks.forEach((track)=>{
+            room.addTrack(track);
+        })
+    }).catch(error => console.log(error))
+}, 2000)
+
 
 if (JitsiMeetJS.mediaDevices.isDeviceChangeAvailable('output')) {
     JitsiMeetJS.mediaDevices.enumerateDevices(devices => {
