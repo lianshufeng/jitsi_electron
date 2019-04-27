@@ -11,6 +11,7 @@ JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.INFO);
 
 
 let host_server = 'https://webrtc.dzurl.top';
+let room_name = 'xiaofeng';
 
 /* eslint-disable no-unused-vars, no-var */
 
@@ -599,7 +600,7 @@ function onConnectionSuccess() {
 
 
     //第一个参数为房间名
-    room = connection.initJitsiConference('xiaofeng', confOptions);
+    room = connection.initJitsiConference(room_name, confOptions);
     room.on(JitsiMeetJS.events.conference.TRACK_ADDED, onRemoteTrack);
     room.on(JitsiMeetJS.events.conference.TRACK_REMOVED, (track) => {
         console.log(`track removed!!!${track}`);
@@ -721,7 +722,6 @@ window.JitsiMeetScreenObtainer = {
                     return;
 
 
-                  
                 }
             }
         });
@@ -865,7 +865,7 @@ setTimeout(function () {
         devices: ['desktop','audio'],
         desktopSharingSources: _title
     }).then((tracks) => {
-        tracks.forEach((track)=>{
+        tracks.forEach((track) => {
             room.addTrack(track);
         })
     }).catch(error => console.log(error))

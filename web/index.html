@@ -20,8 +20,24 @@
 
     <script src="example.js"></script>
 
+    <script>
+
+        $(function () {
+            document.body.onresize = function () {
+                $('#demo_video').attr('width',  window.innerWidth - 10);
+                $('#demo_video').attr('height', window.innerHeight - 40);
+            }
+        })
+
+    </script>
+
 </head>
 <body>
+
+<video src="http://127.0.0.1:8080/qcxlsc.flv" autoplay="autoplay" id="demo_video" controls="controls" width="400"
+       height="300"/>
+
+
 <a href="#" onclick="unload()">Unload</a>
 <a href="#" onclick="switchVideo()">switchVideo</a>
 <div id="audioOutputSelectWrapper" style="display: none;">
@@ -30,8 +46,8 @@
 </div>
 
 
-
 <!-- <video id="localVideo" autoplay="true"></video> -->
+
 <!--<audio id="localAudio" autoplay="true" muted="true"></audio>-->
 </body>
 </html>
