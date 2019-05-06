@@ -687,32 +687,17 @@ let isVideo = true;
 //自定义屏幕的抓取
 window.JitsiMeetScreenObtainer = {
 
+    /**
+     * 需要桌面声音
+     */
+    needDesktopAudio: true,
 
     /**
-     * 获取用户媒体的钩子
-     * @param constraints
-     * @param um
-     * @param options
+     * 打开桌面选择器
+     * @param desktopSharingSources
+     * @param handleStream
+     * @param handleError
      */
-    getUserMedia(constraints, um, options) {
-        console.log('<-- hook ->', constraints, um, options);
-
-        //修改获取系统声音
-        if (um.indexOf('desktop') > -1) {
-            constraints['audio'] = {
-                mandatory: {
-                    chromeMediaSource: 'desktop',
-                    echoCancellation: true
-                },
-                optional: [{
-                    disableLocalEcho: true
-                }]
-            }
-        }
-
-    },
-
-
     openDesktopPicker(desktopSharingSources, handleStream, handleError) {
         //获取所有的窗口 ， , 'screen'（屏幕）
         desktopCapturer.getSources({types: ['window']}, (error, sources) => {
@@ -720,17 +705,17 @@ window.JitsiMeetScreenObtainer = {
                 if (sources[i].name === desktopSharingSources.desktopSharingSources) {
                     handleStream(sources[i].id, 'window');
                     return;
-
-
                 }
             }
         });
 
 
     }
+    ,
 
 
-};
+}
+;
 
 
 /**
@@ -861,11 +846,12 @@ connection.connect();
 setTimeout(function () {
 //屏幕共享
     JitsiMeetJS.createLocalTracks({
-        //需要系统声音，必须添加audio，同时需要hook navigator.mediaDevices.getUserMedia
-        devices: ['desktop','audio'],
+        //desktop,audio,video 需要系统声音，必须添加audio，同时需要hook navigator.mediaDevices.getUserMedia
+        devices: ['desktop'],
         desktopSharingSources: _title
     }).then((tracks) => {
         tracks.forEach((track) => {
+            console.log('test--->',tracks);
             room.addTrack(track);
         })
     }).catch(error => console.log(error))
@@ -874,8 +860,7 @@ setTimeout(function () {
 
 if (JitsiMeetJS.mediaDevices.isDeviceChangeAvailable('output')) {
     JitsiMeetJS.mediaDevices.enumerateDevices(devices => {
-        const audioOutputDevices
-            = devices.filter(d => d.kind === 'audiooutput');
+        const audioOutputDevices = devices.filter(d => d.kind === 'audiooutput');
 
         if (audioOutputDevices.length > 1) {
             $('#audioOutputSelect').html(
