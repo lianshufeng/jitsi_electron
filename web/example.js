@@ -127,7 +127,8 @@ var options = {
     // },
 
     // Enable / disable simulcast support.
-    // disableSimulcast: false,
+    // 禁用联播
+    disableSimulcast: false,
 
     // Enable / disable layer suspension.  If enabled, endpoints whose HD
     // layers are not in use will be suspended (no longer sent) until they
@@ -632,10 +633,12 @@ function onConnectionSuccess() {
         () => console.log(`${room.getPhoneNumber()} - ${room.getPhonePin()}`));
 
 
+
     //设置接收到最高的分辨率,但流会被重新接收，所以需要流停止的情况
-    room.setReceiverVideoConstraint(720);
+    room.setReceiverVideoConstraint(1080);
 
     room.join();
+
 
 
 }
@@ -814,7 +817,6 @@ const initOptions = {
     desktopSharingFirefoxDisabled: true
 };
 
-//JitsiMeetJS.init(initOptions);
 
 JitsiMeetJS.init(options);
 
@@ -836,11 +838,6 @@ JitsiMeetJS.mediaDevices.addEventListener(
 
 connection.connect();
 
-// JitsiMeetJS.createLocalTracks({devices: ['desktop']})
-//     .then(shareScreen)
-//     .catch(error => {
-//         throw error;
-//     });
 
 //启动则进行屏幕共享
 setTimeout(function () {
